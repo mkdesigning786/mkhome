@@ -2,3 +2,4 @@ private/config.php
 .env
 *.pem
 *.key
+node_modules/

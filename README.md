@@ -4,7 +4,8 @@ This starter project sends a low-voltage LED/button state from a NodeMCU ESP8266
 
 ## Project structure
 
-- `public_html/index.html` — simple dashboard
+- `public_html/frontend/` — React dashboard source and Vite project configuration
+- `public_html/index.html` — built dashboard served by the PHP host
 - `public_html/api/device-event.php` — authenticated device event endpoint
 - `public_html/api/device-status.php` — dashboard read-only status endpoint
 - `private/config.example.php` — copy to `config.php` outside `public_html` and fill in credentials
@@ -17,10 +18,13 @@ This starter project sends a low-voltage LED/button state from a NodeMCU ESP8266
 1. In cPanel, create a MySQL/MariaDB database and user; grant the required privileges.
 2. Run `database/schema.sql` in phpMyAdmin against that database.
 3. Copy `private/config.example.php` to a private folder outside `public_html`, rename it to `config.php`, and replace placeholders.
-4. Upload `public_html/index.html` and `public_html/api/` to the domain document root.
-5. Ensure HTTPS is working.
-6. In the ESP8266 sketch, set Wi-Fi credentials, API URL, and the same device token used by the PHP config.
-7. Open Serial Monitor at 115200 baud.
+4. In `public_html/frontend/`, install Node.js dependencies with `npm install`, then run `npm run build` to generate the React dashboard in `public_html/`.
+5. Upload the contents of `public_html/` (including `api/` and generated assets) to the domain document root.
+6. Ensure HTTPS is working.
+7. In the ESP8266 sketch, set Wi-Fi credentials, API URL, and the same device token used by the PHP config.
+8. Open Serial Monitor at 115200 baud.
+
+For local development, start the PHP API on `http://127.0.0.1:8000`, then run `npm run dev` from `public_html/frontend/`. Vite serves the React UI and proxies `/api` requests to PHP. The `.htaccess` file prevents public access to the React source and npm files.
 
 ## Important safety/security notes
 
