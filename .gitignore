@@ -1,0 +1,4 @@
+private/config.php
+.env
+*.pem
+*.key

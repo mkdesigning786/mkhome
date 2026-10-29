@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MK Smart Home</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, Arial, sans-serif; max-width: 650px;
+           margin: 35px auto; padding: 16px; }
+    .panel { border: 1px solid #8886; border-radius: 12px; padding: 20px; }
+    #state { font-size: 24px; font-weight: bold; }
+    .muted { opacity: .75; }
+  </style>
+</head>
+<body>
+  <h1>MK DESIGNING SMART HOME</h1>
+  <div class="panel">
+    <h2>Test LED — mk-led-01</h2>
+    <p>LED reported state: <span id="state">Loading...</span></p>
+    <p>Last update: <span id="time">—</span></p>
+    <p id="message" class="muted">Connecting to database API...</p>
+  </div>
+  <script>
+    async function refreshStatus() {
+      const message = document.getElementById('message');
+      try {
+        const response = await fetch('./api/device-status.php?t=' + Date.now(),
+                                     { cache: 'no-store' });
+        if (!response.ok) throw new Error('API HTTP ' + response.status);
+        const data = await response.json();
+        if (!data.ok) throw new Error('API request failed');
+
+        if (!data.device) {
+          document.getElementById('state').textContent = 'No data yet';
+          document.getElementById('time').textContent = '—';
+        } else {
+          document.getElementById('state').textContent =
+            Number(data.device.output_state) === 1 ? 'ON' : 'OFF';
+          document.getElementById('time').textContent = data.device.last_seen;
+        }
+        message.textContent = 'Database status loaded';
+      } catch (error) {
+        message.textContent = 'Error: ' + error.message;
+      }
+    }
+    refreshStatus();
+    setInterval(refreshStatus, 5000);
+  </script>
+</body>
+</html>
