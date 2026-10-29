@@ -1,0 +1,24 @@
+# macOS / editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Logs and local runtime files
+*.log
+*.tmp
+.env
+.env.*
+
+# Secrets and generated config
+config.php
+config.local.php
+*.pem
+*.key
+*.crt
+private/config.php
+private/*.php
+
+# Build artifacts
+node_modules/
+coverage/
+__pycache__/
