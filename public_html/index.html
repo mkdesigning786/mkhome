@@ -1,51 +1,1011 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MK Smart Home</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, Arial, sans-serif; max-width: 650px;
-           margin: 35px auto; padding: 16px; }
-    .panel { border: 1px solid #8886; border-radius: 12px; padding: 20px; }
-    #state { font-size: 24px; font-weight: bold; }
-    .muted { opacity: .75; }
-  </style>
-</head>
-<body>
-  <h1>MK DESIGNING SMART HOME</h1>
-  <div class="panel">
-    <h2>Test LED — mk-led-01</h2>
-    <p>LED reported state: <span id="state">Loading...</span></p>
-    <p>Last update: <span id="time">—</span></p>
-    <p id="message" class="muted">Connecting to database API...</p>
-  </div>
-  <script>
-    async function refreshStatus() {
-      const message = document.getElementById('message');
-      try {
-        const response = await fetch('./api/device-status.php?t=' + Date.now(),
-                                     { cache: 'no-store' });
-        if (!response.ok) throw new Error('API HTTP ' + response.status);
-        const data = await response.json();
-        if (!data.ok) throw new Error('API request failed');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MK Designing | Smart Home Dashboard</title>
 
-        if (!data.device) {
-          document.getElementById('state').textContent = 'No data yet';
-          document.getElementById('time').textContent = '—';
-        } else {
-          document.getElementById('state').textContent =
-            Number(data.device.output_state) === 1 ? 'ON' : 'OFF';
-          document.getElementById('time').textContent = data.device.last_seen;
-        }
-        message.textContent = 'Database status loaded';
-      } catch (error) {
-        message.textContent = 'Error: ' + error.message;
-      }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #060b18;
+    --panel: #0c1525;
+    --border: #1d3046;
+    --text: #f4f7ff;
+    --muted: #8494af;
+    --cyan: #00e7c0;
+    --blue: #269cff;
+    --purple: #7855ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #060b18 !important;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+}
+
+button, input { font: inherit; }
+
+.app { min-height: 100vh; }
+
+.sidebar {
+    width: 245px;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 5;
+    padding: 25px 17px;
+    background: #070c18;
+    border-right: 1px solid #18283b;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: white;
+    padding: 0 8px 38px;
+}
+
+.brand-logo {
+    font-size: 29px;
+    font-weight: 800;
+    letter-spacing: -2px;
+}
+.logo {
+    width: 100px;
+    height: auto;
+    object-fit: contain;
+}
+
+.brand-logo span { color: var(--cyan); }
+
+.brand-name {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.brand-name small {
+    display: block;
+    color: #8292ac;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    margin-top: 5px;
+}
+
+.side-label {
+    font-size: 9px;
+    color: #647590;
+    letter-spacing: 1.8px;
+    padding: 0 13px 12px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #8797b1;
+    font-size: 12px;
+    padding: 12px 13px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    text-decoration: none;
+}
+
+.nav-link i { font-size: 16px; }
+
+.nav-link.active {
+    color: var(--cyan);
+    background: #082628;
+    border: 1px solid #104648;
+}
+
+.nav-number {
+    margin-left: auto;
+    background: #1b293b;
+    padding: 3px 7px;
+    border-radius: 5px;
+}
+
+.sidebar-bottom { margin-top: auto; }
+
+.sidebar-card {
+    background: linear-gradient(140deg, #0d1d2d, #0b1220);
+    border: 1px solid #1b3446;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 18px;
+}
+
+.sidebar-card i {
+    font-size: 23px;
+    color: var(--cyan);
+}
+
+.sidebar-card h6 {
+    font-size: 11px;
+    margin-top: 12px;
+}
+
+.sidebar-card p {
+    color: var(--muted);
+    font-size: 10px;
+    margin-bottom: 8px;
+}
+
+.sidebar-card a {
+    color: var(--cyan);
+    font-size: 10px;
+    text-decoration: none;
+}
+
+.admin {
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 31px;
+    height: 31px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.admin strong { font-size: 10px; display: block; }
+.admin small { color: var(--muted); font-size: 9px; }
+
+.main {
+    margin-left: 245px;
+    padding: 0 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.main::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 0 245px;
+    pointer-events: none;
+    opacity: .45;
+    background-image:
+        radial-gradient(circle at 12% 12%, #00dfff 0 2px, transparent 4px),
+        radial-gradient(circle at 36% 8%, #00dfff 0 2px, transparent 4px),
+        radial-gradient(circle at 72% 19%, #00dfff 0 2px, transparent 4px),
+        radial-gradient(circle at 84% 57%, #00dfff 0 2px, transparent 4px),
+        radial-gradient(circle at 23% 76%, #00dfff 0 2px, transparent 4px),
+        radial-gradient(circle at 64% 85%, #00dfff 0 2px, transparent 4px);
+}
+
+.topbar {
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #17263a;
+    position: relative;
+    z-index: 1;
+}
+
+.breadcrumb {
+    color: #71839e;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.breadcrumb strong { color: white; }
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.demo-status {
+    font-size: 9px;
+    color: #9babc2;
+}
+
+.demo-status span {
+    width: 7px;
+    height: 7px;
+    display: inline-block;
+    background: var(--cyan);
+    border-radius: 50%;
+    margin-right: 6px;
+    box-shadow: 0 0 9px #00e7c0;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    align-items: center;
+    min-height: 280px;
+    padding: 30px 0;
+    border-bottom: 1px solid #17263a;
+    position: relative;
+    z-index: 1;
+}
+
+.eyebrow {
+    color: var(--cyan);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.7px;
+}
+
+.eyebrow span {
+    width: 7px;
+    height: 7px;
+    display: inline-block;
+    border-radius: 50%;
+    background: var(--cyan);
+    margin-right: 8px;
+    box-shadow: 0 0 10px #00e7c0;
+}
+
+.hero h1 {
+    font: 800 clamp(34px, 4vw, 48px)/1.15 'Manrope', sans-serif;
+    letter-spacing: -2px;
+    margin: 17px 0 13px;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+    max-width: 430px;
+}
+
+.btn-mk {
+    border-radius: 7px;
+    padding: 11px 14px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.btn-mk-primary {
+    background: var(--cyan);
+    color: #04131b;
+    border: 1px solid var(--cyan);
+}
+
+.btn-mk-secondary {
+    background: #0c1525;
+    border: 1px solid #28374e;
+    color: #d3def0;
+}
+
+.hero-art {
+    min-height: 225px;
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+
+.house-icon {
+    width: 112px;
+    height: 112px;
+    border: 1px solid #087f91;
+    border-radius: 27px;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle, #103a4c, #0b1427);
+    box-shadow: 0 0 70px #009bdf20;
+    transform: rotate(-7deg);
+}
+
+.house-icon i {
+    font-size: 48px;
+    color: var(--cyan);
+    transform: rotate(7deg);
+}
+
+.orbit {
+    position: absolute;
+    width: 240px;
+    height: 160px;
+    border: 1px solid #124056;
+    border-radius: 50%;
+    transform: rotate(-25deg);
+}
+
+.orbit.two {
+    width: 190px;
+    height: 130px;
+    border-color: #16355a;
+}
+
+.floating-info {
+    position: absolute;
+    background: #0b1424;
+    border: 1px solid #1b354b;
+    border-radius: 9px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.floating-info i {
+    color: var(--cyan);
+    font-size: 20px;
+}
+
+.floating-info strong {
+    display: block;
+    color: white;
+    margin-top: 3px;
+}
+
+.info-one { left: 0; top: 25px; }
+.info-two { right: 0; bottom: 25px; }
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 13px;
+    padding: 22px 0 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card, .device-card {
+    background: linear-gradient(145deg, #0e1929, #0a1220);
+    border: 1px solid #1d2d43;
+    border-radius: 10px;
+}
+
+.stat-card { padding: 16px; }
+
+.stat-head {
+    display: flex;
+    justify-content: space-between;
+    color: #8c9bb4;
+    font-size: 10px;
+}
+
+.stat-head i { color: var(--cyan); font-size: 16px; }
+
+.stat-number {
+    display: block;
+    font: 800 29px 'Manrope', sans-serif;
+    margin: 11px 0 5px;
+}
+
+.stat-number small {
+    font: 500 10px 'DM Sans', sans-serif;
+    color: var(--muted);
+    margin-left: 7px;
+}
+
+.stat-foot { font-size: 9px; color: #71839e; }
+
+.devices-section { position: relative; z-index: 1; padding-bottom: 25px; }
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.section-head h2 {
+    font: 800 23px 'Manrope', sans-serif;
+    margin: 9px 0 5px;
+}
+
+.section-head h2 span {
+    font: 600 10px 'DM Sans', sans-serif;
+    color: var(--cyan);
+    background: #092e34;
+    padding: 5px 7px;
+    border-radius: 5px;
+}
+
+.section-head p { color: var(--muted); font-size: 10px; margin: 0; }
+
+.tools { display: flex; gap: 8px; }
+
+.search-box, .filter-btn {
+    height: 36px;
+    border: 1px solid #24334b;
+    border-radius: 7px;
+    background: #0b1423;
+    color: #8799b3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+}
+
+.search-box input {
+    width: 145px;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: white;
+    font-size: 10px;
+}
+
+.search-box input::placeholder { color: #6f819a; }
+
+.filter-btn { font-size: 10px; }
+
+.device-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.device-card { padding: 15px; transition: .2s; }
+.device-card:hover { border-color: #2b5263; transform: translateY(-2px); }
+.device-card.is-on { border-color: #17504e; }
+
+.device-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.device-symbol {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: #192438;
+    color: #8294b1;
+    border-radius: 9px;
+    font-size: 17px;
+}
+
+.device-symbol.lit { background: #073634; color: var(--cyan); }
+
+.status-pill {
+    background: #172235;
+    color: #7b8ca8;
+    border-radius: 5px;
+    padding: 5px 7px;
+    font-size: 8px;
+}
+
+.status-pill.active { color: #65e6cd; background: #07302f; }
+
+.device-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.device-main h3 { font-size: 12px; font-weight: 700; margin: 0 0 5px; }
+.device-main p { font-size: 9px; color: #8494ae; margin: 0; overflow-wrap: anywhere; }
+.device-main p small { color: #526783; }
+
+.switch {
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 20px;
+    background: #2a354b;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.switch span {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8b9ab1;
+    transition: .2s;
+}
+
+.switch.on { background: #08735f; }
+.switch.on span { transform: translateX(16px); background: #72f5d4; }
+
+.device-footer, .fan-control {
+    border-top: 1px solid #1d2a3e;
+    margin-top: 15px;
+    padding-top: 11px;
+}
+
+.device-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #7385a0;
+}
+
+.device-card.is-on .device-footer span:last-child { color: var(--cyan); }
+
+.range-label {
+    display: flex;
+    justify-content: space-between;
+    color: #8c9db7;
+    font-size: 9px;
+}
+
+.range-label strong { color: var(--cyan); }
+.fan-control input { width: 100%; accent-color: var(--cyan); margin: 12px 0 5px; }
+.fan-control input:disabled { opacity: .3; }
+.range-label small { color: #657893; font-size: 8px; }
+
+.empty { color: var(--muted); padding: 30px; text-align: center; grid-column: 1/-1; }
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid #17263a;
+    padding: 17px 0 22px;
+    color: #667b99;
+    font-size: 9px;
+    position: relative;
+    z-index: 1;
+}
+
+footer strong { color: #aebbd0; }
+footer i { color: var(--cyan); }
+
+@media(max-width:1200px) {
+    .sidebar { width: 215px; }
+    .main { margin-left: 215px; padding: 0 25px; }
+    .main::before { left: 215px; }
+    .device-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media(max-width:850px) {
+    .sidebar { width: 65px; padding: 20px 8px; }
+    .brand { padding: 0 8px 30px; }
+    .brand-name, .side-label, .nav-link:not(.active), .sidebar-bottom { display: none; }
+    .nav-link { justify-content: center; font-size: 0; padding: 13px 0; }
+    .nav-link i { font-size: 18px; }
+    .main { margin-left: 65px; padding: 0 18px; }
+    .main::before { left: 65px; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-art { display: none; }
+    .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .section-head { align-items: flex-start; flex-direction: column; }
+    .tools { width: 100%; }
+    .search-box { flex: 1; }
+    .search-box input { width: 100%; }
+}
+
+@media(max-width:560px) {
+    .main { padding: 0 12px; }
+    .hero h1 { font-size: 35px; }
+    .stats { gap: 8px; }
+    .stat-card { padding: 12px; }
+    .stat-number { font-size: 25px; }
+    .device-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; }
+}
+#background-particles {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+}
+
+/* Keep your dashboard visible above the particles */
+.sidebar,
+.main {
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar {
+    position: fixed;
+}
+
+/* Respect users who prefer less animation */
+@media (prefers-reduced-motion: reduce) {
+    #background-particles {
+        display: none;
     }
-    refreshStatus();
-    setInterval(refreshStatus, 5000);
-  </script>
+}
+
+/* Main dashboard background */
+body,
+.main {
+    background-color: #060b18 !important;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #060b18 !important;
+}
+
+/* Active navigation */
+.nav-link.active {
+    color: var(--cyan);
+    background: #060b18 !important;
+    border: 1px solid #104648;
+}
+
+/* Active device cards */
+.device-card.is-on {
+    border-color: #17504e;
+}
+
+/* Active device icon */
+.device-symbol.lit {
+    background: #060b18 !important;
+    color: var(--cyan);
+}
+
+/* Active status */
+.status-pill.active {
+    color: #65e6cd;
+    background: #060b18 !important;
+}
+
+/* Active switch */
+.switch.on {
+    background: #060b18 !important;
+    border: 1px solid var(--cyan);
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<canvas id="background-particles"></canvas>
+<aside class="sidebar">
+    <a class="brand" href="https://mkdesigning.in/" target="_blank">
+        <div class="brand-logo"><img src="https://mkdesigning.in/logo-DTKZ4zfC.png" alt="MK Designing Logo" class="logo"></div>
+        <div class="brand-name">
+            MK DESIGNING
+            <small>SMART HOME STUDIO</small>
+        </div>
+    </a>
+
+    <div class="side-label">CONTROL CENTER</div>
+    <a class="nav-link active" href="#overview"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+    <a class="nav-link" href="#devices"><i class="bi bi-toggles"></i> Devices <span class="nav-number">10</span></a>
+    <a class="nav-link" href="#devices"><i class="bi bi-house-door"></i> Rooms</a>
+
+    <div class="sidebar-bottom">
+        <div class="sidebar-card">
+            <i class="bi bi-code-slash"></i>
+            <h6>Designed by MK</h6>
+            <p>Digital experiences. Connected living.</p>
+            <a href="https://mkdesigning.in/" target="_blank">mkdesigning.in ↗</a>
+        </div>
+        <div class="admin">
+            <div class="avatar">MK</div>
+            <div><strong>Home Admin</strong><small>Local dashboard</small></div>
+        </div>
+    </div>
+</aside>
+
+<main class="main" id="overview">
+    <header class="topbar">
+        <div class="breadcrumb">WORKSPACE <i class="bi bi-chevron-right"></i> <strong>SMART HOME</strong></div>
+        <div class="top-right">
+            <div class="demo-status"><span></span> DEMO ENVIRONMENT</div>
+            <div class="avatar">MK</div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div>
+            <div class="eyebrow"><span></span> SMART LIVING / DEVICE OVERVIEW</div>
+            <h1>Your home,<br>powered by <span class="gradient-text">great design.</span></h1>
+            <p>Manage your connected space with a clean, confident interface built for everyday living.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn-mk btn-mk-primary" onclick="toggleAll(true)">
+                    <i class="bi bi-power me-2"></i>Turn everything on
+                </button>
+                <button class="btn-mk btn-mk-secondary" onclick="toggleAll(false)">
+                    Turn everything off
+                </button>
+            </div>
+        </div>
+
+        <div class="hero-art">
+            <div class="orbit"></div>
+            <div class="orbit two"></div>
+            <div class="house-icon"><i class="bi bi-house-heart-fill"></i></div>
+            <div class="floating-info info-one">
+                <i class="bi bi-lightbulb-fill"></i>
+                <div>LIGHTING<strong id="heroLights">2 active</strong></div>
+            </div>
+            <div class="floating-info info-two">
+                <i class="bi bi-wifi"></i>
+                <div>NETWORK<strong>Demo connected</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-head"><span>Registered devices</span><i class="bi bi-grid"></i></div>
+            <strong class="stat-number" id="totalCount">10<small>devices</small></strong>
+            <div class="stat-foot">All devices in your home</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-head"><span>Currently active</span><i class="bi bi-power"></i></div>
+            <strong class="stat-number" id="activeCount">4<small>/ 10</small></strong>
+            <div class="stat-foot">Devices switched on</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-head"><span>Lights on</span><i class="bi bi-lightbulb"></i></div>
+            <strong class="stat-number" id="lightCount">3<small>lights</small></strong>
+            <div class="stat-foot">Lighting status overview</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-head"><span>Fans running</span><i class="bi bi-fan"></i></div>
+            <strong class="stat-number" id="fanCount">1<small>fans</small></strong>
+            <div class="stat-foot">Speed-adjustable fans</div>
+        </div>
+    </section>
+
+    <section class="devices-section" id="devices">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow"><span></span> DEVICE MANAGEMENT</div>
+                <h2>Your devices <span>10</span></h2>
+                <p>Simple controls for the things that make your house a home.</p>
+            </div>
+            <div class="tools">
+                <label class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input id="searchInput" type="search" placeholder="Find a device..." oninput="renderDevices()">
+                </label>
+                <select id="deviceFilter" class="filter-btn" onchange="renderDevices()">
+                    <option>All devices</option>
+                    <option>Lights</option>
+                    <option>Fans</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="device-grid" id="deviceGrid"></div>
+    </section>
+
+    <footer>
+        <span>© 2026 <strong>MK Designing</strong> · Smart Home Interface</span>
+        <span>DESIGNED FOR CONNECTED LIVING <i class="bi bi-circle-fill"></i></span>
+    </footer>
+</main>
+</div>
+
+<script>
+const devices = [
+    {id:'mk-led-01',name:'Living Room Light',room:'Living Room',type:'light',on:true},
+    {id:'mk-fan-01',name:'Living Room Fan',room:'Living Room',type:'fan',on:true,speed:3},
+    {id:'mk-led-02',name:'Bedroom Light',room:'Bedroom',type:'light',on:false},
+    {id:'mk-fan-02',name:'Bedroom Fan',room:'Bedroom',type:'fan',on:false,speed:2},
+    {id:'mk-led-03',name:'Kitchen Light',room:'Kitchen',type:'light',on:true},
+    {id:'mk-led-04',name:'Hallway Light',room:'Hallway',type:'light',on:false},
+    {id:'mk-led-05',name:'Bathroom Light',room:'Bathroom',type:'light',on:false},
+    {id:'mk-led-06',name:'Outdoor Light',room:'Outdoor',type:'light',on:true},
+    {id:'mk-fan-03',name:'Exhaust Fan',room:'Kitchen',type:'fan',on:false,speed:1},
+    {id:'mk-led-07',name:'Balcony Light',room:'Balcony',type:'light',on:false}
+];
+
+function renderDevices() {
+    const filter = document.getElementById('deviceFilter').value;
+    const query = document.getElementById('searchInput').value.toLowerCase();
+
+    const visible = devices.filter(d => {
+        const typeMatch = filter === 'All devices' ||
+            (filter === 'Lights' && d.type === 'light') ||
+            (filter === 'Fans' && d.type === 'fan');
+        const queryMatch = `${d.name} ${d.room} ${d.id}`.toLowerCase().includes(query);
+        return typeMatch && queryMatch;
+    });
+
+    document.getElementById('deviceGrid').innerHTML = visible.length
+        ? visible.map(d => `
+        <article class="device-card ${d.on ? 'is-on' : ''}">
+            <div class="device-head">
+                <div class="device-symbol ${d.on ? 'lit' : ''}">
+                    <i class="bi ${d.type === 'fan' ? 'bi-fan' : 'bi-lightbulb-fill'}"></i>
+                </div>
+                <span class="status-pill ${d.on ? 'active' : ''}">
+                    ${d.on ? '● ACTIVE' : '● STANDBY'}
+                </span>
+            </div>
+
+            <div class="device-main">
+                <div>
+                    <h3>${d.name}</h3>
+                    <p>${d.room} <small>· ${d.id}</small></p>
+                </div>
+                <button class="switch ${d.on ? 'on' : ''}"
+                    onclick="toggleDevice('${d.id}')"
+                    aria-label="Toggle ${d.name}">
+                    <span></span>
+                </button>
+            </div>
+
+            ${d.type === 'fan' ? `
+                <div class="fan-control">
+                    <div class="range-label">
+                        <span><i class="bi bi-speedometer2"></i> Fan regulator</span>
+                        <strong>${d.on ? d.speed : 0}/5</strong>
+                    </div>
+                    <input type="range" min="1" max="5" value="${d.speed}"
+                        ${d.on ? '' : 'disabled'}
+                        oninput="setFanSpeed('${d.id}', this.value)">
+                    <div class="range-label">
+                        <small>LOW</small><small>HIGH</small>
+                    </div>
+                </div>
+            ` : `
+                <div class="device-footer">
+                    <span><i class="bi bi-cpu"></i> Smart relay</span>
+                    <span>${d.on ? 'Power on' : 'Power off'}</span>
+                </div>
+            `}
+        </article>
+        `).join('')
+        : '<div class="empty">No devices found. Try another search.</div>';
+
+    updateStats();
+}
+
+function toggleDevice(id) {
+    const device = devices.find(d => d.id === id);
+    device.on = !device.on;
+    renderDevices();
+}
+
+function toggleAll(state) {
+    devices.forEach(d => d.on = state);
+    renderDevices();
+}
+
+function setFanSpeed(id, value) {
+    const device = devices.find(d => d.id === id);
+    device.speed = Number(value);
+    const card = [...document.querySelectorAll('.device-card')]
+        .find(el => el.querySelector('h3')?.textContent === device.name);
+    if (card) {
+        const label = card.querySelector('.range-label strong');
+        if (label) label.textContent = `${device.speed}/5`;
+    }
+}
+
+function updateStats() {
+    const active = devices.filter(d => d.on).length;
+    const lights = devices.filter(d => d.on && d.type === 'light').length;
+    const fans = devices.filter(d => d.on && d.type === 'fan').length;
+
+    document.getElementById('totalCount').innerHTML = `${devices.length}<small>devices</small>`;
+    document.getElementById('activeCount').innerHTML = `${active}<small>/ ${devices.length}</small>`;
+    document.getElementById('lightCount').innerHTML = `${lights}<small>lights</small>`;
+    document.getElementById('fanCount').innerHTML = `${fans}<small>fans</small>`;
+    document.getElementById('heroLights').textContent = `${lights} active`;
+}
+
+renderDevices();
+</script>
+<script>
+(() => {
+    const canvas = document.getElementById('background-particles');
+    const ctx = canvas.getContext('2d');
+
+    let width, height, particles = [];
+    let animationId;
+
+    const particleCount = window.innerWidth < 768 ? 28 : 55;
+    const connectionDistance = 125;
+
+    function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        particles = Array.from({ length: particleCount }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.22,
+            vy: (Math.random() - 0.5) * 0.22,
+            radius: Math.random() * 1.5 + 0.5
+        }));
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        particles.forEach((p, i) => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0 || p.x > width) p.vx *= -1;
+            if (p.y < 0 || p.y > height) p.vy *= -1;
+
+            // Small, softly glowing cyan particles
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 220, 255, 0.65)';
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = 'rgba(0, 220, 255, 0.35)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Fine connecting lines
+            for (let j = i + 1; j < particles.length; j++) {
+                const q = particles[j];
+                const dx = p.x - q.x;
+                const dy = p.y - q.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < connectionDistance) {
+                    const opacity = (1 - distance / connectionDistance) * 0.16;
+
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(q.x, q.y);
+                    ctx.strokeStyle = `rgba(0, 190, 255, ${opacity})`;
+                    ctx.lineWidth = 0.6;
+                    ctx.stroke();
+                }
+            }
+        });
+
+        animationId = requestAnimationFrame(animate);
+    }
+
+    resizeCanvas();
+    animate();
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Reduce CPU usage when the browser tab is hidden
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            cancelAnimationFrame(animationId);
+        } else {
+            cancelAnimationFrame(animationId);
+            animate();
+        }
+    });
+})();
+</script>
 </body>
 </html>

@@ -6,7 +6,7 @@ const char* WIFI_SSID = "YOUR_WIFI_NAME";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 
 // Change this if your domain or API path is different.
-const char* API_URL = "https://mkdesigning.in/api/device-event.php";
+const char* API_URL = "https://iot.mkdesigning.in/api/device-event.php";
 
 // Must match DEVICE_API_TOKEN in your private config.php.
 const char* DEVICE_TOKEN = "REPLACE_WITH_YOUR_DEVICE_TOKEN";
